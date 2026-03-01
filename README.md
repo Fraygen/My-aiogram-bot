@@ -1,4 +1,4 @@
-# 🤖 Telegram Bot: Gemeni Pro Ultra
+# 🤖 Telegram Bot: Gemini Pro Ultra
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://python.org)
 [![Aiogram](https://img.shields.io/badge/aiogram-3.25-green?logo=telegram)](https://docs.aiogram.dev)
