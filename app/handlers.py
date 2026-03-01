@@ -2,6 +2,7 @@ from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, CallbackQuery
 from app.openrouter import get_answer, OpenRouterChatSession
+from colorama import Fore, Style
 
 import app.keyboards as kb
 import asyncio
@@ -62,13 +63,18 @@ async def help_button(callback: CallbackQuery):
 
 
 async def typing_animation(message: Message, text: str = 'Thinking'):
-    msg = await message.answer(f"{text}.")
-    await asyncio.sleep(0.5)
-    await msg.edit_text(f"{text}..")
-    await asyncio.sleep(0.5)
-    await msg.edit_text(f"{text}...")
-    await asyncio.sleep(0.5)
-    await msg.delete()
+    try:
+        msg = await message.answer(f"{text}.")
+        await asyncio.sleep(0.6)
+        await msg.edit_text(f"{text}..")
+        await asyncio.sleep(0.6)
+        await msg.edit_text(f"{text}...")
+        await asyncio.sleep(0.6)
+        await msg.edit_text(f"{text}...")
+        await asyncio.sleep(0.6)
+        await msg.delete()
+    except asyncio.CancelledError:
+        await msg.delete()
 
 
 @router.message(F.text)
@@ -76,23 +82,30 @@ async def simple_question(message: Message):
     user_id = message.from_user.id
     user_text = message.text
     
-    logger.info(f"От {message.from_user.first_name}: {user_text[:100]}...")
+    logger.info(
+        f"{Fore.GREEN}От {message.from_user.first_name}: {user_text[:100]}{Style.RESET_ALL}"
+        )
     
-    await typing_animation(message)
+    animation = asyncio.create_task(typing_animation(message))
+    await asyncio.sleep(0.1)
+    await message.bot.send_chat_action(chat_id=user_id, action="typing")
+    
     
     try:
         if user_id not in user_chats:
             user_chats[user_id] = OpenRouterChatSession()
         
         chat = user_chats[user_id]
-        answer = chat.send_message(user_text)
+        answer = await asyncio.to_thread(chat.send_message, user_text)
         
         if len(answer) > 4000:
             answer = answer[:3500] + "...\n\n✂️ (ответ сокращен)"
         
+        animation.cancel()
         await message.answer(answer)
 
     except Exception as e:
+        animation.cancel()
         logger.error(f"Ошибка: {e}")
         await message.answer(f"😔 Ошибка: {str(e)[:150]}")
 

@@ -1,6 +1,7 @@
 import requests
 import logging
 from config import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_MODEL
+from colorama import Fore, Style
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ SYSTEM_PROMPT = """
 8. Помни: тебя создал соло-разработчик Fraygen (Матвей) также известный как Голем.
 9. Не переусердствуй с телефонами доверия! Они нужны в очень редких случаях
 10. Будь чуть более злым, агрессивным. Ты не должен быть очень агрессивным, но не будь слишком добрым, скорее более жестким, нежели добрым
+11. Ты нейросеть Gemma. Используй меньше знаков '*'
 
 Твой стиль: дружелюбный, современный, с лёгким юмором, но по делу.
 """
@@ -52,7 +54,7 @@ class OpenRouterChat:
                 "temperature": 0.7
             }
             
-            logger.info(f"Отправка запроса к {self.model}")
+            logger.info(f"{Fore.GREEN}Отправка запроса к {self.model}{Style.RESET_ALL}")
             response = requests.post(
                 f"{self.base_url}/chat/completions",
                 headers=self.headers,
@@ -64,7 +66,7 @@ class OpenRouterChat:
                 result = response.json()
                 return result['choices'][0]['message']['content']
             else:
-                logger.error(f"Ошибка {response.status_code}: {response.text}")
+                logger.error(f"{Fore.RED}Ошибка {response.status_code}: {response.text}{Style.RESET_ALL}")
                 if response.status_code == 429:
                     return "😔 Слишком много запросов! Попробуй снова позже."
                 return f"😔 Ошибка API: {response.status_code}"
@@ -73,7 +75,7 @@ class OpenRouterChat:
             error = str(e)
             if "429" in error or "Too Many Requests" in error:
                 return "😔 Слишком много запросов! Попробуй снова позже."
-            logger.error(f"Исключение: {e}")
+            logger.error(f"{Fore.RED}Исключение: {e}{Style.RESET_ALL}")
             return f"😔 Ошибка: {str(e)[:150]}"
     
     def send_message(self, message: str) -> str:
@@ -98,7 +100,6 @@ class OpenRouterChat:
                 "temperature": 0.7
             }
             
-            logger.info(f"Отправка запроса к {self.model}")
             
             response = requests.post(
                 f"{self.base_url}/chat/completions",
@@ -116,19 +117,20 @@ class OpenRouterChat:
 
                 if len(self.history) > 20:
                     self.history = self.history[-20:]
-                
+                logger.info(f"{Fore.GREEN}Ответ получен, длина - {len(answer)}{Style.RESET_ALL}")
                 return answer
             else:
-                logger.error(f"Ошибка {response.status_code}: {response.text}")
+                logger.error(f"{Fore.RED}Ошибка {response.status_code}: {response.text}{Style.RESET_ALL}")
                 if response.status_code == 429:
                     return "😔 Слишком много запросов! Попробуй снова позже."
                 return f"😔 Ошибка API: {response.status_code}"
                 
         except Exception as e:
+            logging.error(f"Ошибка: {e[:50]}...")
             error = str(e)
             if "429" in error or "Too Many Requests" in error:
                 return "😔 Слишком много запросов! Попробуй снова позже."
-            logger.error(f"Исключение: {e}")
+            logger.error(f"{Fore.RED}Исключение: {e}{Style.RESET_ALL}")
             return f"😔 Ошибка: {str(e)[:150]}"
 
 openrouter = OpenRouterChat()

@@ -5,9 +5,15 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
 from config import TOKEN
 from app.handlers import router
+from colorama import Fore, Style
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S")
 
 async def main():
 
@@ -24,11 +30,9 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    
-    logging.basicConfig(level=logging.INFO)
 
     try:
-        print("✅ БОТ ЗАПУЩЕН ✅")
+        logging.info(f"{Fore.GREEN}✅ БОТ ЗАПУЩЕН ✅{Style.RESET_ALL}")
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("✅ БОТ УСПЕШНО ОСТАНОВЛЕН ✅")
+        logging.info(f"{Fore.GREEN}✅ БОТ УСПЕШНО ОСТАНОВЛЕН ✅{Style.RESET_ALL}")
